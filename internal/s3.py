@@ -4,6 +4,15 @@ import boto3
 def upload_folder_to_s3(repo_path, bucket_name="mini-vercel", s3_prefix="" , profile_name="my-sso"):
     session = boto3.Session(profile_name=profile_name)
     s3 = session.client('s3')
+    try:
+        s3.head_bucket(Bucket=bucket_name)
+        print(f" Bucket '{bucket_name}' already exists.")
+    except s3.exceptions.ClientError as e:
+        # If bucket doesn't exist, create it
+        s3.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={'LocationConstraint': session.region_name}
+        )
 
     for root, dirs, files in os.walk(repo_path):
         for file in files:
